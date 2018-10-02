@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<body>
+<ul>
+  <% for (let indivUrls in urls) { %>
+    <li><strong>Original URL: </strong><%= urls[indivUrls] %><br><strong>Shortened URL: </strong><%= indivUrls %></li>
+    <% }; %>
+</ul>
+<a href='#''>Click here to shorten an URL.</a>
+</body>
+</html>
