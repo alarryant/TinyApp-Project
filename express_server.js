@@ -43,9 +43,19 @@ app.get("/urls/:id", (req, res) => {
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
 
-
+WJfrBp
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
+});
+
+app.post("/urls/:id", (req, res) => {
+
+  console.log("we are in the update", req.params.id);
+  // change longURL in database corresponding to :id
+  urlDatabase[req.params.id] = req.body.longURL;// new long URL
+  let shortURL = req.params.id;
+  res.redirect(`/urls/${shortURL}`);
+
 });
 
 app.post("/urls", (req, res) => {
@@ -59,6 +69,11 @@ app.post("/urls", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL]; // let longURL = ...
   res.redirect(longURL);
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
 });
 
 function generateRandomString() {

@@ -6,9 +6,13 @@
 <body>
 <ul>
   <% for (let indivUrls in urls) { %>
-    <li><strong>Original URL: </strong><%= urls[indivUrls] %><br><strong>Shortened URL: </strong><%= indivUrls %></li>
+    <li><strong>Original URL: </strong><%= urls[indivUrls] %><br><strong>Shortened URL: </strong><%= indivUrls %>
+      <a href="/urls/<%= indivUrls %>">Edit</a><form method="POST" action="/urls/<%= indivUrls %>/delete" name="deleteform">
+        <input type="submit" value="Delete" />
+      </form>
+    </li>
     <% }; %>
 </ul>
-<a href='#''>Click here to shorten an URL.</a>
+<a href='/urls/new''>Click here to shorten an URL.</a>
 </body>
 </html>
