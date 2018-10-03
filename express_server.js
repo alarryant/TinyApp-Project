@@ -64,6 +64,14 @@ app.listen(PORT, () => {
 // };
 // res.render("urls_index","urls_new","urls_show", templateVars);
 
+// endpoint of form for email and password
+app.get("/register", (req, res) => {
+  let username = req.cookies["username"];
+  let templateVars = { urls: urlDatabase,
+                       username: username};
+  res.render("register", templateVars);
+});
+
 app.post("/urls/:id", (req, res) => {
   // console.log("we are in the update", req.params.id);
   // change longURL in database corresponding to :id
