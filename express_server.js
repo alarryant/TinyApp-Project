@@ -52,12 +52,12 @@ app.post("/urls", (req, res) => {
   var shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   // console.log(urlDatabase);  // debug statement to see POST parameters
-  res.send(`http://localhost:8080/urls/${shortURL}`);
+  res.redirect(`/urls/${shortURL}`);
   // console.log(urlDatabase);      // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = // let longURL = ...
+  let longURL = urlDatabase[req.params.shortURL]; // let longURL = ...
   res.redirect(longURL);
 });
 
@@ -66,7 +66,7 @@ var randomString = '';
 var possibleChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
 // console.log(possibleChars.length);
   for (let i = 0; i < 6; i++) {
-  randomString += possibleChars[getRandomInt(0, 62)];
+  randomString += possibleChars[getRandomInt(0, 61)];
   };
   return randomString;
 }
