@@ -1,6 +1,7 @@
 var express = require("express");
 var app = express();
 var PORT = 8080;
+var fs = require("fs");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 
@@ -9,85 +10,145 @@ app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
+//Databases here---------------------------------------------
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello! Welcome to TinyApp");
-  });
-
-app.get("/urls", (req, res) => {
-    // console.log(req.cookies);
-  let username = req.cookies["username"];
-  let templateVars = { urls: urlDatabase,
-    username: username};
-  res.render("urls_index", templateVars);
-});
-
-// enter new URL to be shortened
-app.get("/urls/new", (req, res) => {
-  let templateVars = { username: username };
-  res.render("urls_new", templateVars);
-});
-
-// show short and long URL and give option to change longURL
-app.get("/urls/:id", (req, res) => {
-  let templateVars = {
-    shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id],
-    username: username
-  };
-  // console.log("this should be a truthy value", username === true);
-  res.render("urls_show", templateVars);
-});
-
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase.b2xVn2);
-//   });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-
+const users = {
+  angela: {
+    email: "angela@example.com",
+    password: "purple-monkey-dinosaur",
+    id: "angela"
+  },
+ monica: {
+    email: "monica@example.com",
+    password: "dishwasher-funk",
+    id: "monica"
+  }
+};
+//------------------------------------------------------------
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// ??????
-// console.log(req.cookies);
-// let templateVars = {
-//   username: req.cookies["Username"],
-//   urls: urlDatabase
-//   // ... any other vars
-// };
-// res.render("urls_index","urls_new","urls_show", templateVars);
-
-// endpoint of form for email and password
-app.get("/register", (req, res) => {
-  let username = req.cookies["username"];
-  let templateVars = { urls: urlDatabase,
-                       username: username};
-  res.render("register", templateVars);
+app.get("/", (req, res) => {
+  res.send("Hello! Welcome to TinyApp");
 });
 
-app.post("/urls/:id", (req, res) => {
-  // console.log("we are in the update", req.params.id);
-  // change longURL in database corresponding to :id
-  urlDatabase[req.params.id] = req.body.longURL;// new long URL
-  let shortURL = req.params.id;
-  res.redirect(`/urls/${shortURL}`);
-
+// /urls page-------------------------------------------------
+app.get("/urls", (req, res) => {
+    // console.log(req.cookies);
+  let user_id = req.cookies["user_id"];
+  // console.log("This is my", user_id);
+  let templateVars = { urls: urlDatabase,
+    user_id: user_id};
+    console.log(templateVars.user_id);
+  res.render("urls_index", templateVars);
 });
 
 // generate random string for URL
 app.post("/urls", (req, res) => {
-  var shortURL = generateRandomString();
+  const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  // console.log(urlDatabase);  // debug statement to see POST parameters
   res.redirect(`/urls/${shortURL}`);
-  // console.log(urlDatabase);      // Respond with 'Ok' (we will replace this)
+});
+//------------------------------------------------------------
+//urls/shortID here--------------------------------------------
+// show short and long URL and give option to change longURL
+app.get("/urls/:id", (req, res) => {
+  let user_id = req.cookies["user_id"];
+  // console.log(urlDatabase[req.params.id]);
+  let templateVars = {
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id],
+    user_id: user_id
+  };
+  res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;// new long URL
+  let shortURL = req.params.id;
+  res.redirect(`/urls/${shortURL}`);
+});
+//-------------------------------------------------------------
+// login page---------------------------------------------------
+app.get("/login", (req, res) => {
+  // let user_id = req.cookies["user_id"];
+  let templateVars = { user_id: undefined};
+  res.render("login", templateVars);
+});
+
+// set login username as cookie
+app.post("/login", (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
+  var flag = 0;
+  var currentUser;
+  for(var key in users){
+    if(users[key].email === email && users[key].password === password){
+      flag = 1;
+      currentUser = key;
+      break;
+    }
+    else if (email === '' || password === '') {
+      flag = 2;
+      break;
+    }
+    else if (users[key].email === email && users[key].password !== password) {
+      flag = 3;
+      break;
+    }
+  }
+
+  if(flag === 1){
+    res.cookie('user_id', key).redirect("/");
+  }
+  else if (flag === 2) {
+    res.status(403).send("Please enter both your email and password.");
+  }
+  else if (flag === 3) {
+    res.status(403).send("Sorry, incorrect password.");
+  } else { (flag === 0);
+    res.status(403).send("That email does not exist.");
+  }
+});
+//----------------------------------------------------------------
+//register -------------------------------------------------------
+// endpoint of form for email and password
+app.get("/register", (req, res) => {
+  let user_id = req.cookies["user_id"];
+  let templateVars = { urls: urlDatabase,
+                       user_id: user_id };
+  res.render("register", templateVars);
+});
+
+// add new users to database
+app.post("/register", (req, res) => {
+  let loginID = generateRandomString();
+  let emailArray = [];
+  for (var id in users) {
+    emailArray.push(users[id].email);
+  }
+  if (req.body.email === '' || req.body.password === '') {
+    res.status(400).send(`Please enter an email and/or password`);
+  }
+  else if (emailArray.includes(req.body.email)) {
+    res.status(400).send('This email is already in use!');
+  } else {
+    users[loginID] = req.body;
+    users[loginID].id = loginID;
+    res.cookie('user_id', loginID).redirect('/urls');
+  }
+});
+//----------------------------------------------------------------
+// enter new URL to be shortened
+app.get("/urls/new", (req, res) => {
+  // let user_id = req.cookies["user_id"];
+  let templateVars = { user_id: user_id };
+  res.render("urls_new", templateVars);
 });
 
 //redirect to longURL using shortURL
@@ -102,25 +163,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
-// set login username as cookie
-app.post("/login", (req, res) => {
-  var key  = Object.keys(req.body)[0];
-  var username = req.body[key];
-  // console.log(username);
-  res.cookie('username', username).redirect("/urls");
-  // .send(`Logged in as ${req.body[Username]}.`);
-});
-
 // log out and clear cookies
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect('/urls');
 });
 
+//functions---------------------------------------------------------
 function generateRandomString() {
 var randomString = '';
-var possibleChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
-// console.log(possibleChars.length);
+const possibleChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
   for (let i = 0; i < 6; i++) {
   randomString += possibleChars[getRandomInt(0, 61)];
   };
@@ -133,8 +185,4 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
-
-
-// console.log(generateRandomString());
-
 

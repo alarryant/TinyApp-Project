@@ -4,7 +4,8 @@
   <% include partials/_header %>
 </head>
 <body>
-    <%= shortURL %>: <%= longURL %>
+    <h2>Your new link:</h2><%= shortURL %><br>
+    <h2>Your original link: </h2><%= longURL %>
 <form action="/urls/<%=shortURL%>" method="POST" style="margin:150px;">
       <label for="longURL">Enter a new URL:</label>
       <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
