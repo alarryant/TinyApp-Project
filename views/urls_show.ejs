@@ -4,16 +4,17 @@
   <% include partials/_header %>
 </head>
 <body>
-    <h2>Your new link:</h2> <a href="/u/<%= shortURL %>><%= shortURL %></a><br>
-    <h2>Your original link: </h2><%= longURL %>
-<form action="/urls/<%=shortURL%>" method="POST" style="margin:150px;">
+    <h2 style="padding-top:20px; padding-bottom:20px; padding-left:20px"><strong>Share your new link:</strong> /u/<%=shortURL %></h2><br>
+    <h2 style="padding-top:20px; padding-bottom:20px; padding-left:20px"><strong>Your original link:</strong> <%= longURL %></h2><br><br><br><br>
+    <center><strong><a href="/urls">View or edit your saved URLs here</a></strong></center>
+    <center><form action="/urls/<%=shortURL%>" method="POST" style="margin:50px;">
       <label for="longURL">Enter a new URL:</label>
       <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
       <input type= "hidden" id=<%= shortURL%> name="shortURL" value=<%= shortURL%> />
       <input type="submit" value="Update">
-    </form>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    </form></center>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </body>
 </html>

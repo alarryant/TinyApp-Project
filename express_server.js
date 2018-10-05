@@ -1,7 +1,7 @@
-var express = require("express");
-var app = express();
-var PORT = 8080;
-var fs = require("fs");
+const express = require("express");
+const app = express();
+const PORT = 8080;
+const fs = require("fs");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
@@ -52,7 +52,7 @@ app.get("/urls", (req, res) => {
   if (user_id) {
     var newDatabase = urlsForUser(user_id);
     let templateVars = { userDatabase: newDatabase,
-                         user_id: req.session.user_id,
+                         user_id: user_id,
                          users: users
     };
       // console.log(templateVars.user_id);
@@ -109,7 +109,7 @@ app.post("/login", (req, res) => {
 app.get("/register", (req, res) => {
   let user_id = req.session.user_id;
   let templateVars = { urls: urlDatabase,
-                       user_id: req.session.user_id,
+                       user_id: user_id,
                        users: users };
   res.render("register", templateVars);
 });
@@ -142,7 +142,7 @@ app.get("/urls/new", (req, res) => {
   if (!user_id) {
     res.redirect("/login");
   } else {
-  let templateVars = { user_id: req.session.user_id,
+  let templateVars = { user_id: user_id,
                        users: users };
   res.render("urls_new", templateVars);
   }
@@ -180,7 +180,7 @@ app.get("/urls/:id", (req, res) => {
     let templateVars = {
       shortURL: req.params.id,
       longURL: urlDatabase[req.params.id].longURL,
-      user_id: req.session.user_id,
+      user_id: user_id,
       users: users
     };
     res.render("urls_show", templateVars);
@@ -233,15 +233,3 @@ function urlsForUser(id) {
   }
   return userDatabase;
 }
-
-// function findUserByEmail(email) {
-//   for (const person in users) {
-//     const user = users[person];
-//     if (email === user.email) {
-//       return person;
-//     } else {
-//       return false;
-//     }
-//   }
-// }
-

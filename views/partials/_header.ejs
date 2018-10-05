@@ -1,15 +1,16 @@
 <head>
   <title>TinyApp</title>
-<% if (!user_id) { %>
-<p><a href="/register">Register</a> or <a href="/login">Log In</a></p>
-<% } else { %>
-<center><p><strong>Welcome,</strong> <%=users[user_id].email%>
+  <center><strong><h1>TinyApp</h1></strong></center><br>
+  <% if (!user_id) { %>
+    <p><a href="/register">Register</a> or <a href="/login">Log In</a></p>
+  <% } else { %>
+    <center><p><strong>Welcome,</strong> <%=users[user_id].email%>
       <form method="POST" action="/logout">
         <input type="submit" value="Log Out">
       </form>
     </center>
-<% } %>
-</p>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <% } %>
+    </p>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
 <center><hr></center>
