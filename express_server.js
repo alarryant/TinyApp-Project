@@ -14,7 +14,35 @@ app.use(cookieSession({
 
 app.set('view engine', 'ejs');
 
-//Databases here---------------------------------------------
+//functions---------------------------------------------------------
+function generateRandomString() {
+var randomString = '';
+const possibleChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
+  for (let i = 0; i < 6; i++) {
+  randomString += possibleChars[getRandomInt(0, 61)];
+  };
+  return randomString;
+}
+
+// MDN code for random integer between min - max
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+
+function urlsForUser(id) {
+  var userDatabase = {};
+  for (shortURL in urlDatabase) {
+    const urlData = urlDatabase[shortURL];
+    if (id === urlData.userID) {
+      userDatabase[shortURL] = urlData;
+    }
+  }
+  return userDatabase;
+}
+//--------------------------------------------------------------------
+//Databases here------------------------------------------------------
 // key of urlDatabase is shortURL, userID is randomly generated userID
 var urlDatabase = {
   "b2xVn2": {
@@ -54,7 +82,7 @@ app.get("/urls", (req, res) => {
     let templateVars = { userDatabase: newDatabase,
                          user_id: user_id,
                          users: users
-    };
+                       };
       // console.log(templateVars.user_id);
     res.render("urls_index", templateVars);
   } else {
@@ -93,16 +121,16 @@ app.post("/login", (req, res) => {
     res.status(403).send("Please enter both your email and password.");
     return;
   } else {
-      for (const key in users) {
-        if(users[key].email === email && bcrypt.compareSync(password, users[key].password)){
-          req.session.user_id = key;
-          res.redirect("/urls");
-          return;
-        }
+    for (const key in users) {
+      if(users[key].email === email && bcrypt.compareSync(password, users[key].password)){
+        req.session.user_id = key;
+        res.redirect("/urls");
+        return;
       }
-      res.status(403).send("Email and password combination not found.");
     }
-  });
+    res.status(403).send("Email and password combination not found.");
+  }
+});
 //----------------------------------------------------------------
 //register -------------------------------------------------------
 // endpoint of form for email and password
@@ -118,13 +146,16 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   let loginID = generateRandomString();
   let emailArray = [];
+  let email = req.body.email;
+  let password = req.body.password;
+
   for (var id in users) {
     emailArray.push(users[id].email);
   }
-  if (req.body.email === '' || req.body.password === '') {
+  if (email === '' || password === '') {
     res.status(400).send(`Please enter an email and/or password`);
   }
-  else if (emailArray.includes(req.body.email)) {
+  else if (emailArray.includes(email)) {
     res.status(400).send('This email is already in use!');
   } else {
     users[loginID] = {};
@@ -139,6 +170,7 @@ app.post("/register", (req, res) => {
 // enter new URL to be shortened
 app.get("/urls/new", (req, res) => {
   let user_id = req.session.user_id;
+
   if (!user_id) {
     res.redirect("/login");
   } else {
@@ -150,16 +182,18 @@ app.get("/urls/new", (req, res) => {
 
 //redirect to longURL using shortURL
 app.get("/u/:shortURL", (req, res) => {
-  // console.log(req.params);
-  let longURL = urlDatabase[req.params.shortURL].longURL; // let longURL = ...
+  let longURL = urlDatabase[req.params.shortURL].longURL;
+
   res.redirect(longURL);
 });
 
 // delete an url in urlDatabase
 app.post("/urls/:shortURL/delete", (req, res) => {
   let userID = req.session.user_id;
-  if (userID === urlDatabase[req.params.shortURL].userID) {
-    delete urlDatabase[req.params.shortURL];
+  let urlDatabaseKey = urlDatabase[req.params.shortURL];
+
+  if (userID === urlDatabaseKey.userID) {
+    delete urlDatabaseKey;
     res.redirect('/urls');
   } else {
     res.redirect('/login');
@@ -176,13 +210,14 @@ app.post("/logout", (req, res) => {
 // show short and long URL and give option to change longURL
 app.get("/urls/:id", (req, res) => {
   let user_id = req.session.user_id;
+  let urlDatabaseKey = urlDatabase[req.params.id];
+
   if (user_id) {
-    let templateVars = {
-      shortURL: req.params.id,
-      longURL: urlDatabase[req.params.id].longURL,
-      user_id: user_id,
-      users: users
-    };
+    let templateVars = { shortURL: req.params.id,
+                         longURL: urlDatabaseKey.longURL,
+                         user_id: user_id,
+                         users: users
+                       };
     res.render("urls_show", templateVars);
   } else {
     res.redirect("/login");
@@ -192,6 +227,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let userID = req.session.user_id;
   let shortURL = req.params.id;
+
   if (userID === urlDatabase[shortURL].userID) {
     urlDatabase[shortURL].longURL = req.body.longURL;// new long URL
     res.redirect(`/urls/${shortURL}`);
@@ -204,32 +240,3 @@ app.post("/urls/:id", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
-//functions---------------------------------------------------------
-function generateRandomString() {
-var randomString = '';
-const possibleChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
-  for (let i = 0; i < 6; i++) {
-  randomString += possibleChars[getRandomInt(0, 61)];
-  };
-  return randomString;
-}
-
-// MDN code for random integer between min - max
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
-
-function urlsForUser(id) {
-  var userDatabase = {};
-  for (shortURL in urlDatabase) {
-    const urlData = urlDatabase[shortURL];
-    if (id === urlData.userID) {
-      userDatabase[shortURL] = urlData;
-    }
-  }
-  return userDatabase;
-}
