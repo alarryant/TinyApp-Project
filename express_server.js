@@ -41,6 +41,14 @@ function urlsForUser(id) {
   }
   return userDatabase;
 }
+
+function isValidUser(user_id) {
+  for (let id in users) {
+    if (id === user_id) {
+      return true;
+    }
+  }
+}
 //--------------------------------------------------------------------
 //Databases here------------------------------------------------------
 // key of urlDatabase is shortURL, userID is randomly generated userID
@@ -77,7 +85,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   let user_id = req.session.user_id;
   // req.cookies["user_id"];
-  if (user_id) {
+  if (user_id && isValidUser(user_id)) {
     var newDatabase = urlsForUser(user_id);
     let templateVars = { userDatabase: newDatabase,
                          user_id: user_id,
@@ -94,7 +102,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   let user_id = req.session.user_id;
-  if (user_id) {
+  if (user_id && isValidUser(user_id)) {
     urlDatabase[shortURL] = {};
     urlDatabase[shortURL].longURL = req.body.longURL;
     urlDatabase[shortURL].userID = user_id;
@@ -171,33 +179,31 @@ app.post("/register", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let user_id = req.session.user_id;
 
-  if (!user_id) {
-    res.redirect("/login");
+  if (user_id && isValidUser(user_id)) {
+    let templateVars = { user_id: user_id,
+                         users: users };
+    res.render("urls_new", templateVars);
   } else {
-  let templateVars = { user_id: user_id,
-                       users: users };
-  res.render("urls_new", templateVars);
+    res.redirect("/login");
   }
 });
 
 //redirect to longURL using shortURL
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL].longURL;
+  let user_id = req.session.user_id;
 
-  res.redirect(longURL);
+  if (user_id && isValidUser(user_id)) {
+    res.redirect(longURL);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // delete an url in urlDatabase
 app.post("/urls/:shortURL/delete", (req, res) => {
-  let userID = req.session.user_id;
-  let urlDatabaseKey = urlDatabase[req.params.shortURL];
-
-  if (userID === urlDatabaseKey.userID) {
-    delete urlDatabaseKey;
-    res.redirect('/urls');
-  } else {
-    res.redirect('/login');
-  }
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
 });
 
 // log out and clear cookies
@@ -227,9 +233,10 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let userID = req.session.user_id;
   let shortURL = req.params.id;
+  let urlDatabaseKey = urlDatabase[shortURL];
 
-  if (userID === urlDatabase[shortURL].userID) {
-    urlDatabase[shortURL].longURL = req.body.longURL;// new long URL
+  if (userID === urlDatabaseKey.userID) {
+    urlDatabaseKey.longURL = req.body.longURL;// new long URL
     res.redirect(`/urls/${shortURL}`);
   } else {
     res.redirect('/login');
